@@ -19,14 +19,28 @@ export default function LLMPage() {
   const [inferResult, setInferResult] = useState<InferRawResponse | null>(null);
   const [inferLoading, setInferLoading] = useState(false);
 
+  const [downloadLink, setDownloadLink] = useState("");
+  const [downloadName, setDownloadName] = useState("");
+  const [downloading, setDownloading] = useState(false);
+
+  async function fetchCurrentLlm() {
+    try {
+      const res = await axiosInstance.get("/current_llm");
+      const data = res.data || {};
+      setLoaded(data.loaded_llm || null);
+      setServerUrl(data.server_url || null);
+      setLogs((l) => [...l, `Current LLM: ${data.loaded_llm || "none"}`]);
+    } catch (e: any) {
+      setLogs((l) => [...l, `Failed to get current LLM: ${String(e?.message || e)}`]);
+    }
+  }
+
   async function refreshLlms() {
     try {
       setLoading(true);
       const res = await axiosInstance.get("/list_llms");
       const data = res.data || {};
       setLlms(data.downloaded_llms || []);
-      setLoaded(data.loaded_llm || null);
-      setServerUrl(data.server_url || null);
       setLogs((l) => [...l, `Found ${data.downloaded_llms?.length || 0} LLM(s)`]);
     } catch (e: any) {
       setLogs((l) => [...l, `Failed to list LLMs: ${String(e?.message || e)}`]);
@@ -64,7 +78,47 @@ export default function LLMPage() {
     }
   }
 
+  function extractFilenameFromUrl(url: string): string {
+    try {
+      const urlObj = new URL(url);
+      const pathname = urlObj.pathname;
+      const filename = pathname.substring(pathname.lastIndexOf('/') + 1);
+      return filename || '';
+    } catch {
+      return '';
+    }
+  }
+
+  function handleDownloadLinkChange(url: string) {
+    setDownloadLink(url);
+    const filename = extractFilenameFromUrl(url);
+    if (filename) {
+      setDownloadName(filename);
+    }
+  }
+
+  async function downloadLlm() {
+    const link = downloadLink.trim();
+    const name = downloadName.trim();
+    if (!link || !name) return;
+    try {
+      setDownloading(true);
+      setLogs((l) => [...l, `Downloading ${name}...`]);
+      // Use long timeout for downloads (5 minutes)
+      await axiosInstance.post("/download_llm", { url: link, name }, { timeout: 300000 });
+      setLogs((l) => [...l, `Download completed: ${name}`]);
+      setDownloadLink("");
+      setDownloadName("");
+      await refreshLlms();
+    } catch (e: any) {
+      setLogs((l) => [...l, `Download error: ${String(e?.message || e)}`]);
+    } finally {
+      setDownloading(false);
+    }
+  }
+
   useEffect(() => {
+    fetchCurrentLlm();
     refreshLlms();
   }, []);
 
@@ -87,12 +141,39 @@ export default function LLMPage() {
             <div key={m} className={`p-2 rounded border flex items-center justify-between ${loaded === m ? "ring-2 ring-indigo-400" : ""}`}>
               <div className="truncate">{m}</div>
               <div className="flex gap-2">
-                <button className="text-xs px-2 py-1 bg-green-600 text-white rounded" onClick={() => loadLlm(m)}>
-                  Load
-                </button>
+                {loaded === m ? (
+                  <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded">Loaded</span>
+                ) : (
+                  <button className="text-xs px-2 py-1 bg-green-600 text-white rounded" onClick={() => loadLlm(m)}>
+                    Load
+                  </button>
+                )}
               </div>
             </div>
           ))}
+        </div>
+
+        <div className="mt-4">
+          <h3 className="text-sm font-semibold mb-2">Download LLM</h3>
+          <input
+            value={downloadLink}
+            onChange={(e) => handleDownloadLinkChange(e.target.value)}
+            placeholder="Download link..."
+            className="w-full px-2 py-1 mb-2 rounded border bg-white dark:bg-slate-700 text-sm"
+          />
+          <input
+            value={downloadName}
+            onChange={(e) => setDownloadName(e.target.value)}
+            placeholder="Model name..."
+            className="w-full px-2 py-1 mb-2 rounded border bg-white dark:bg-slate-700 text-sm"
+          />
+          <button
+            onClick={downloadLlm}
+            disabled={downloading || !downloadLink.trim() || !downloadName.trim()}
+            className={`w-full text-xs px-2 py-1 rounded ${downloading ? "bg-gray-300" : "bg-blue-600 text-white"}`}
+          >
+            {downloading ? "Downloading..." : "Download"}
+          </button>
         </div>
 
         <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
