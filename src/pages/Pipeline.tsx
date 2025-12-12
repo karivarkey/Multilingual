@@ -15,6 +15,7 @@ type Props = {
   language: string;
   onRefreshModels: () => Promise<void> | void;
   onLoadModel: (id: string) => Promise<void> | void;
+  onUnloadModel: () => Promise<void> | void;
   onStartModel: () => Promise<void> | void;
   onStopModel: () => Promise<void> | void;
   onSendMessage: (text: string) => Promise<void> | void;
@@ -31,6 +32,7 @@ export default function PipelinePage({
   language,
   onRefreshModels,
   onLoadModel,
+  onUnloadModel,
   onStartModel,
   onStopModel,
   onSendMessage,
@@ -42,7 +44,7 @@ export default function PipelinePage({
         <h2 className="text-lg font-semibold mb-3">Models</h2>
         <ModelList models={models} selected={selectedModel} loadedModel={loadedModel} onRefresh={onRefreshModels} onLoad={onLoadModel} />
         <div className="mt-4">
-          <Controls running={running} onStart={onStartModel} onStop={onStopModel} language={language} setLanguage={setLanguage} />
+          <Controls loadedModel={loadedModel} onUnload={onUnloadModel} language={language} setLanguage={setLanguage} />
         </div>
 
         <div className="mt-4">

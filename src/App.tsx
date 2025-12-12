@@ -58,6 +58,17 @@ export default function App() {
     }
   }
 
+  async function unloadModel() {
+    try {
+      await axiosInstance.post("/unload_llm");
+      setLoadedModel(null);
+      setSelectedModel(null);
+      setLogs((l) => [...l, `Unloaded model`]);
+    } catch (err) {
+      setLogs((l) => [...l, `unload_model error: ${String(err)}`]);
+    }
+  }
+
   async function startModel() {
     if (!selectedModel) {
       setLogs((l) => [...l, `No model selected`]);
@@ -258,6 +269,7 @@ export default function App() {
             language={language}
             onRefreshModels={refreshModels}
             onLoadModel={loadModel}
+            onUnloadModel={unloadModel}
             onStartModel={startModel}
             onStopModel={stopModel}
             onSendMessage={sendUserMessage}
