@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../lib/axiosInstance";
+import SystemMetrics from "../components/SystemMetrics";
 
 type RagDoc = { id: string; text: string };
 
@@ -133,6 +134,10 @@ export default function RAGPage() {
           >
             {searching ? "Searching..." : "Search"}
           </button>
+        </div>
+
+        <div className="mt-4">
+          <SystemMetrics />
         </div>
 
         <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">

@@ -1,4 +1,5 @@
 import React, { useRef, useState } from "react";
+import SystemMetrics from "../components/SystemMetrics";
 
 export default function TranslatorPage() {
   const [input, setInput] = useState("");
@@ -110,6 +111,10 @@ export default function TranslatorPage() {
         >
           {isTranslating ? "Translating..." : "Translate"}
         </button>
+
+        <div className="mt-4">
+          <SystemMetrics />
+        </div>
 
         <div className="mt-4 text-xs text-gray-500 dark:text-gray-400" ref={scrollRef}>
           <div>Logs:</div>

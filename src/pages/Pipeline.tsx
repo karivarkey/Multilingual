@@ -2,6 +2,7 @@ import React from "react";
 import ModelList from "../components/ModelList";
 import Controls from "../components/Controls";
 import ChatView from "../components/ChatView";
+import SystemMetrics from "../components/SystemMetrics";
 import type { Message } from "../App";
 
 type Props = {
@@ -42,6 +43,10 @@ export default function PipelinePage({
         <ModelList models={models} selected={selectedModel} loadedModel={loadedModel} onRefresh={onRefreshModels} onLoad={onLoadModel} />
         <div className="mt-4">
           <Controls running={running} onStart={onStartModel} onStop={onStopModel} language={language} setLanguage={setLanguage} />
+        </div>
+
+        <div className="mt-4">
+          <SystemMetrics />
         </div>
 
         <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
