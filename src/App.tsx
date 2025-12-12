@@ -1,8 +1,9 @@
 // src/App.tsx
 import React, { useEffect, useState } from "react";
-import ModelList from "./components/ModelList";
-import ChatView from "./components/ChatView";
-import Controls from "./components/Controls";
+import PipelinePage from "./pages/Pipeline";
+import TranslatorPage from "./pages/Translator";
+import LLMPage from "./pages/LLM";
+import RAGPage from "./pages/RAG";
 import axiosInstance from "./lib/axiosInstance";
 export type Message = { id: string; role: "user" | "assistant" | "system"; text: string };
 
@@ -232,76 +233,27 @@ export default function App() {
         </div>
 
         {activeTab === "Pipeline" && (
-          <div className="grid grid-cols-12 gap-6">
-            {/* Left panel: Models + Controls */}
-            <aside className="col-span-3 p-4 bg-white dark:bg-slate-800 rounded-lg shadow">
-              <h2 className="text-lg font-semibold mb-3">Models</h2>
-              <ModelList
-                models={models}
-                selected={selectedModel}
-                onRefresh={refreshModels}
-                onLoad={loadModel}
-              />
-              <div className="mt-4">
-                <Controls
-                  running={running}
-                  onStart={startModel}
-                  onStop={stopModel}
-                  language={language}
-                  setLanguage={setLanguage}
-                />
-              </div>
-
-              <div className="mt-4">
-                <button
-                  className="text-sm px-3 py-2 bg-gray-200 dark:bg-slate-700 rounded"
-                  onClick={mockPopulateMessages}
-                >
-                  Seed demo conversation
-                </button>
-              </div>
-
-              <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
-                <div>Logs:</div>
-                <div className="h-40 overflow-y-auto bg-slate-50 dark:bg-slate-900 p-2 rounded border">
-                  {logs.map((l, i) => (
-                    <div key={i} className="font-mono text-[12px]">
-                      {l}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </aside>
-
-            {/* Main chat area */}
-            <main className="col-span-9 p-4 bg-white dark:bg-slate-800 rounded-lg shadow">
-              <div className="flex items-center justify-between mb-4">
-                <h1 className="text-2xl font-bold">Edge Multilingual Assistant</h1>
-                <div className="text-sm text-gray-500 dark:text-gray-400">Model: {selectedModel ?? "—"}</div>
-              </div>
-
-              <ChatView messages={messages} onSend={sendUserMessage} />
-            </main>
-          </div>
+          <PipelinePage
+            models={models}
+            selectedModel={selectedModel}
+            running={running}
+            messages={messages}
+            logs={logs}
+            language={language}
+            onRefreshModels={refreshModels}
+            onLoadModel={loadModel}
+            onStartModel={startModel}
+            onStopModel={stopModel}
+            onSendMessage={sendUserMessage}
+            setLanguage={setLanguage}
+          />
         )}
 
-        {activeTab === "Translator" && (
-          <div className="p-6 bg-white dark:bg-slate-800 rounded-lg shadow">
-            <h1 className="text-2xl font-bold">Translator</h1>
-          </div>
-        )}
+        {activeTab === "Translator" && <TranslatorPage />}
 
-        {activeTab === "LLM" && (
-          <div className="p-6 bg-white dark:bg-slate-800 rounded-lg shadow">
-            <h1 className="text-2xl font-bold">LLM</h1>
-          </div>
-        )}
+        {activeTab === "LLM" && <LLMPage />}
 
-        {activeTab === "RAG" && (
-          <div className="p-6 bg-white dark:bg-slate-800 rounded-lg shadow">
-            <h1 className="text-2xl font-bold">RAG</h1>
-          </div>
-        )}
+        {activeTab === "RAG" && <RAGPage />}
       </div>
     </div>
   );
