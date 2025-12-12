@@ -60,6 +60,16 @@ export default function LLMPage() {
     }
   }
 
+  async function unloadLlm() {
+    try {
+      await axiosInstance.post("/unload_llm");
+      setLoaded(null);
+      setLogs((l) => [...l, `Unloaded model`]);
+    } catch (e: any) {
+      setLogs((l) => [...l, `Failed to unload LLM: ${String(e?.message || e)}`]);
+    }
+  }
+
   async function runInfer() {
     const p = prompt.trim();
     if (!p) return;
@@ -128,13 +138,22 @@ export default function LLMPage() {
       <aside className="col-span-4 p-4 bg-white dark:bg-slate-800 rounded-lg shadow">
         <h1 className="text-2xl font-bold mb-3">LLM</h1>
         <div className="text-xs text-gray-500 mb-2">Server: {serverUrl ?? "—"}</div>
-        <button
-          onClick={refreshLlms}
-          disabled={loading}
-          className={`mb-3 w-full px-3 py-2 rounded ${loading ? "bg-gray-300" : "bg-indigo-600 text-white"}`}
-        >
-          {loading ? "Loading..." : "Refresh LLMs"}
-        </button>
+        <div className="flex gap-2 mb-3">
+          <button
+            onClick={refreshLlms}
+            disabled={loading}
+            className={`flex-1 px-3 py-2 rounded ${loading ? "bg-gray-300" : "bg-indigo-600 text-white"}`}
+          >
+            {loading ? "Loading..." : "Refresh LLMs"}
+          </button>
+          <button
+            onClick={unloadLlm}
+            disabled={!loaded}
+            className={`px-3 py-2 rounded ${loaded ? "bg-red-600 text-white" : "bg-gray-300"}`}
+          >
+            Unload
+          </button>
+        </div>
 
         <div className="space-y-2">
           {llms.length === 0 && <div className="text-gray-400">No LLMs found.</div>}
