@@ -61,7 +61,7 @@ export default function App() {
 
   async function loadModel(modelName: string) {
     try {
-      await invoke("load_model", { id: modelName });
+      await axiosInstance.post("/load_llm", { name: modelName });
       setSelectedModel(modelName);
       setLogs((l) => [...l, `Loaded ${modelName}`]);
     } catch (err) {
