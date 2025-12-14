@@ -24,6 +24,9 @@ export default function LLMPage() {
   const [downloadName, setDownloadName] = useState("");
   const [downloading, setDownloading] = useState(false);
 
+  const [metricsResult, setMetricsResult] = useState<any | null>(null);
+  const [metricsLoading, setMetricsLoading] = useState(false);
+
   async function fetchCurrentLlm() {
     try {
       const res = await axiosInstance.get("/current_llm");
@@ -128,6 +131,24 @@ export default function LLMPage() {
     }
   }
 
+  async function measureMetrics() {
+    if (!loaded) {
+      setLogs((l) => [...l, `Cannot measure: no LLM loaded`]);
+      return;
+    }
+    try {
+      setMetricsLoading(true);
+      setLogs((l) => [...l, `Measuring LLM metrics...`]);
+      const res = await axiosInstance.post("/llm_metrics", { llm_name: loaded }, { timeout: 60000 });
+      setMetricsResult(res.data);
+      setLogs((l) => [...l, `Metrics measurement completed`]);
+    } catch (e: any) {
+      setLogs((l) => [...l, `Metrics error: ${String(e?.message || e)}`]);
+    } finally {
+      setMetricsLoading(false);
+    }
+  }
+
   useEffect(() => {
     fetchCurrentLlm();
     refreshLlms();
@@ -154,6 +175,14 @@ export default function LLMPage() {
             Unload
           </button>
         </div>
+
+        <button
+          onClick={measureMetrics}
+          disabled={metricsLoading || !loaded}
+          className={`mb-3 w-full px-3 py-2 rounded text-sm ${metricsLoading || !loaded ? "bg-gray-300" : "bg-purple-600 text-white"}`}
+        >
+          {metricsLoading ? "Measuring..." : "Measure Metric of LLM"}
+        </button>
 
         <div className="space-y-2">
           {llms.length === 0 && <div className="text-gray-400">No LLMs found.</div>}
@@ -253,6 +282,67 @@ export default function LLMPage() {
                 </ul>
               </div>
             )}
+          </div>
+        )}
+
+        {metricsResult && (
+          <div className="mt-6 space-y-4">
+            <h2 className="text-lg font-semibold">LLM Performance Metrics</h2>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-3 rounded border bg-slate-50 dark:bg-slate-900">
+                <h3 className="text-sm font-semibold mb-2">Config</h3>
+                <div className="text-xs space-y-1">
+                  <div><strong>Model:</strong> {metricsResult.config?.llm_name}</div>
+                  <div><strong>Max Tokens:</strong> {metricsResult.config?.max_tokens}</div>
+                  <div><strong>Context Size:</strong> {metricsResult.config?.n_ctx}</div>
+                  <div><strong>GPU Layers:</strong> {metricsResult.config?.n_gpu_layers}</div>
+                  <div><strong>Model Size:</strong> {metricsResult.model_size_gb?.toFixed(2)} GB</div>
+                </div>
+              </div>
+
+              <div className="p-3 rounded border bg-slate-50 dark:bg-slate-900">
+                <h3 className="text-sm font-semibold mb-2">Performance</h3>
+                <div className="text-xs space-y-1">
+                  <div><strong>Load Time:</strong> {metricsResult.load_time_s?.toFixed(3)} s</div>
+                  <div><strong>First Token:</strong> {metricsResult.first_token_latency_ms?.toFixed(2)} ms</div>
+                  <div><strong>Total Inference:</strong> {metricsResult.total_inference_time_s?.toFixed(3)} s</div>
+                  <div><strong>Tokens/sec:</strong> {metricsResult.tokens_per_second?.toFixed(2)}</div>
+                  <div><strong>Output Tokens:</strong> {metricsResult.output_length_tokens}</div>
+                </div>
+              </div>
+
+              <div className="p-3 rounded border bg-slate-50 dark:bg-slate-900">
+                <h3 className="text-sm font-semibold mb-2">Memory (RAM)</h3>
+                <div className="text-xs space-y-1">
+                  <div><strong>Baseline:</strong> {metricsResult.memory?.baseline_rss_mb?.toFixed(2)} MB</div>
+                  <div><strong>After Load:</strong> {metricsResult.memory?.loaded_rss_mb?.toFixed(2)} MB</div>
+                  <div><strong>Peak:</strong> {metricsResult.memory?.peak_rss_mb?.toFixed(2)} MB</div>
+                  <div><strong>Load Increase:</strong> {metricsResult.memory?.load_increase_mb?.toFixed(2)} MB</div>
+                  <div><strong>Inference Increase:</strong> {metricsResult.memory?.inference_increase_mb?.toFixed(2)} MB</div>
+                </div>
+              </div>
+
+              <div className="p-3 rounded border bg-slate-50 dark:bg-slate-900">
+                <h3 className="text-sm font-semibold mb-2">VRAM</h3>
+                <div className="text-xs space-y-1">
+                  <div><strong>Total:</strong> {metricsResult.vram?.total_mb?.toFixed(2)} MB</div>
+                  <div><strong>Baseline:</strong> {metricsResult.vram?.baseline_used_mb?.toFixed(2)} MB</div>
+                  <div><strong>After Load:</strong> {metricsResult.vram?.loaded_used_mb?.toFixed(2)} MB</div>
+                  <div><strong>Peak:</strong> {metricsResult.vram?.peak_used_mb?.toFixed(2)} MB</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-3 rounded border bg-slate-50 dark:bg-slate-900">
+              <h3 className="text-sm font-semibold mb-2">Demo Prompt</h3>
+              <div className="text-xs whitespace-pre-wrap">{metricsResult.config?.demo_prompt}</div>
+            </div>
+
+            <div className="p-3 rounded border bg-slate-50 dark:bg-slate-900">
+              <h3 className="text-sm font-semibold mb-2">Output Text</h3>
+              <div className="text-xs whitespace-pre-wrap">{metricsResult.output_text}</div>
+            </div>
           </div>
         )}
       </main>
