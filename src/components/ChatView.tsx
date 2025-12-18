@@ -25,13 +25,13 @@ export default function ChatView({ messages, onSend }: { messages: Message[]; on
     <div className="flex flex-col h-[70vh]">
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50 dark:bg-slate-900 rounded">
         {messages.map((m) => (
-          <div key={m.id} className={`p-3 rounded ${m.role === "user" ? "bg-indigo-50 self-end text-right" : m.role === "assistant" ? "bg-slate-100" : "bg-yellow-50 text-sm"}`}>
+          <div key={m.id} className={`p-3 rounded ${m.role === "user" ? "bg-indigo-50 dark:bg-indigo-900 self-end text-right text-gray-900 dark:text-gray-100" : m.role === "assistant" ? "bg-slate-100 dark:bg-slate-800 text-gray-900 dark:text-gray-100" : "bg-yellow-50 dark:bg-yellow-900 text-sm text-gray-900 dark:text-gray-100"}`}>
             <div className="whitespace-pre-wrap">{m.text}</div>
-            <div className="text-xs text-gray-400 mt-1">{m.role}</div>
+            <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">{m.role}</div>
           </div>
         ))}
         {messages.length === 0 && (
-          <div className="text-center text-gray-400">No conversation yet. Try loading a model and sending a prompt.</div>
+          <div className="text-center text-gray-400 dark:text-gray-500">No conversation yet. Try loading a model and sending a prompt.</div>
         )}
       </div>
 

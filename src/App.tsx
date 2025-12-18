@@ -165,6 +165,51 @@ export default function App() {
           } else if (payload.type === "done") {
             setRunning(false);
             setLogs((l) => [...l, `Response complete`]);
+
+            // Surface pipeline stats and LLM outputs in the chat
+            const timing = payload.timing || {};
+            const ragUsed = payload.rag_used || [];
+            const lines: string[] = [];
+
+            lines.push("=== Pipeline Summary ===");
+
+            if (Object.keys(timing).length > 0) {
+              lines.push("Timings (s):");
+              if (timing.translate_to_en_s !== undefined) lines.push(`• translate_to_en        : ${timing.translate_to_en_s.toFixed(3)}`);
+              if (timing.rag_retrieval_s !== undefined) lines.push(`• rag_retrieval          : ${timing.rag_retrieval_s.toFixed(3)}`);
+              if (timing.llm_stream_s !== undefined) lines.push(`• llm_stream             : ${timing.llm_stream_s.toFixed(3)}`);
+              if (timing.translate_to_source_total_s !== undefined) lines.push(`• translate_to_source    : ${timing.translate_to_source_total_s.toFixed(3)}`);
+              if (timing.total_pipeline_s !== undefined) lines.push(`• total_pipeline         : ${timing.total_pipeline_s.toFixed(3)}`);
+              lines.push("");
+            }
+
+            lines.push("RAG Contexts:");
+            lines.push(`• count: ${Array.isArray(ragUsed) ? ragUsed.length : 0}`);
+            if (Array.isArray(ragUsed) && ragUsed.length > 0) {
+              ragUsed.slice(0, 3).forEach((ctx: any, idx: number) => {
+                lines.push(`   - [${idx + 1}] ${String(ctx).substring(0, 140)}${String(ctx).length > 140 ? "..." : ""}`);
+              });
+              if (ragUsed.length > 3) {
+                lines.push(`   ...and ${ragUsed.length - 3} more`);
+              }
+            }
+            lines.push("");
+
+            if (payload.llm_output_en_raw) {
+              lines.push("LLM output (raw):");
+              lines.push(payload.llm_output_en_raw);
+              lines.push("");
+            }
+            if (payload.llm_output_en_clean) {
+              lines.push("LLM output (clean):");
+              lines.push(payload.llm_output_en_clean);
+            }
+
+            if (lines.length > 0) {
+              const systemMsgId = String(Date.now() + 2);
+              setMessages((prev) => [...prev, { id: systemMsgId, role: "system", text: lines.join("\n") }]);
+            }
+
             // Stop reveal timer when stream finishes
             if (revealTimer !== null) {
               window.clearInterval(revealTimer);
