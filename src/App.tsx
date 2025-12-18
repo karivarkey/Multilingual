@@ -166,6 +166,20 @@ export default function App() {
             setRunning(false);
             setLogs((l) => [...l, `Response complete`]);
 
+            // Flush any remaining words in the queue immediately
+            while (wordQueue.length > 0) {
+              const nextWord = wordQueue.shift()!;
+              setMessages((prev) => {
+                const copy = [...prev];
+                const lastMsg = copy[copy.length - 1];
+                if (lastMsg && lastMsg.role === "assistant") {
+                  const newText = (lastMsg.text ? lastMsg.text + " " : "") + nextWord;
+                  copy[copy.length - 1] = { ...lastMsg, text: newText };
+                }
+                return copy;
+              });
+            }
+
             // Surface pipeline stats and LLM outputs in the chat
             const timing = payload.timing || {};
             const ragUsed = payload.rag_used || [];
