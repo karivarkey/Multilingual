@@ -46,9 +46,9 @@ interface RagMetrics {
       [key: string]: number;
     };
   };
-  vram: {
-    after_indexing_used_mb: number;
-    baseline_used_mb: number;
+  vram?: {
+    after_indexing_used_mb?: number;
+    baseline_used_mb?: number;
   };
 }
 
@@ -328,12 +328,14 @@ export default function RAGPage() {
                 <div className="text-sm space-y-1">
                   <div><span className="font-medium">Original:</span> {metrics.restoration.original_doc_count} docs</div>
                   <div><span className="font-medium">Restored:</span> {metrics.restoration.restored_doc_count} docs</div>
-                  <div className="mt-2 w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                    <div
-                      className="bg-green-600 h-2.5 rounded-full"
-                      style={{ width: `${metrics.restoration.restored_doc_count > 0 ? (metrics.restoration.restored_doc_count / metrics.restoration.original_doc_count * 100) : 0}%` }}
-                    ></div>
-                  </div>
+                  {metrics.restoration.original_doc_count > 0 && (
+                    <div className="mt-2 w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                      <div
+                        className="bg-green-600 h-2.5 rounded-full"
+                        style={{ width: `${metrics.restoration.restored_doc_count > 0 ? (metrics.restoration.restored_doc_count / metrics.restoration.original_doc_count * 100) : 0}%` }}
+                      ></div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -345,8 +347,8 @@ export default function RAGPage() {
                   <div><span className="font-medium">Min Query:</span> {metrics.retrieval_performance.min_query_time_ms.toFixed(2)} ms</div>
                   <div><span className="font-medium">Max Query:</span> {metrics.retrieval_performance.max_query_time_ms.toFixed(2)} ms</div>
                   <div className="mt-2 font-medium text-xs">Top-K Times:</div>
-                  {Object.entries(metrics.retrieval_performance.topk_avg_times_ms).map(([k, v]) => (
-                    <div key={k} className="ml-2 text-xs">Top {k}: {v.toFixed(2)} ms</div>
+                  {metrics.retrieval_performance.topk_avg_times_ms && Object.entries(metrics.retrieval_performance.topk_avg_times_ms).map(([k, v]) => (
+                    <div key={k} className="ml-2 text-xs">Top {k}: {v?.toFixed(2) ?? 'N/A'} ms</div>
                   ))}
                 </div>
               </div>
@@ -383,19 +385,23 @@ export default function RAGPage() {
               </div>
 
               {/* VRAM */}
-              <div className="p-4 bg-pink-50 dark:bg-pink-900/20 rounded-lg">
-                <h3 className="font-semibold text-pink-800 dark:text-pink-300 mb-2">VRAM</h3>
-                <div className="text-sm space-y-1">
-                  <div><span className="font-medium">Baseline:</span> {metrics.vram.baseline_used_mb.toFixed(2)} MB</div>
-                  <div><span className="font-medium">After Index:</span> {metrics.vram.after_indexing_used_mb.toFixed(2)} MB</div>
-                  <div className="mt-2 w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                    <div
-                      className="bg-pink-600 h-2.5 rounded-full"
-                      style={{ width: `${Math.min((metrics.vram.after_indexing_used_mb / 4000) * 100, 100)}%` }}
-                    ></div>
+              {metrics.vram && (
+                <div className="p-4 bg-pink-50 dark:bg-pink-900/20 rounded-lg">
+                  <h3 className="font-semibold text-pink-800 dark:text-pink-300 mb-2">VRAM</h3>
+                  <div className="text-sm space-y-1">
+                    <div><span className="font-medium">Baseline:</span> {metrics.vram.baseline_used_mb?.toFixed(2) ?? 'N/A'} MB</div>
+                    <div><span className="font-medium">After Index:</span> {metrics.vram.after_indexing_used_mb?.toFixed(2) ?? 'N/A'} MB</div>
+                    {metrics.vram.after_indexing_used_mb && (
+                      <div className="mt-2 w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                        <div
+                          className="bg-pink-600 h-2.5 rounded-full"
+                          style={{ width: `${Math.min((metrics.vram.after_indexing_used_mb / 4000) * 100, 100)}%` }}
+                        ></div>
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* RAG Impact (if using LLM) */}
               {metrics.rag_impact && !metrics.rag_impact.skipped && (

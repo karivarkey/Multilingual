@@ -44,11 +44,11 @@ interface TranslatorMetrics {
       tokens_per_sec: number;
     };
   };
-  vram: {
-    after_forward_used_mb: number;
-    baseline_used_mb: number;
-    peak_used_mb: number;
-    total_mb: number;
+  vram?: {
+    after_forward_used_mb?: number;
+    baseline_used_mb?: number;
+    peak_used_mb?: number;
+    total_mb?: number;
   };
 }
 
@@ -285,22 +285,28 @@ export default function TranslatorPage() {
               </div>
 
               {/* VRAM Section */}
-              <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                <h3 className="font-semibold text-orange-800 dark:text-orange-300 mb-2">VRAM</h3>
-                <div className="text-sm space-y-1">
-                  <div><span className="font-medium">Total:</span> {metrics.vram.total_mb.toFixed(2)} MB</div>
-                  <div><span className="font-medium">Baseline:</span> {metrics.vram.baseline_used_mb.toFixed(2)} MB</div>
-                  <div><span className="font-medium">Peak Used:</span> {metrics.vram.peak_used_mb.toFixed(2)} MB</div>
-                  <div><span className="font-medium">After Forward:</span> {metrics.vram.after_forward_used_mb.toFixed(2)} MB</div>
-                  <div className="mt-2 w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                    <div
-                      className="bg-orange-600 h-2.5 rounded-full"
-                      style={{ width: `${(metrics.vram.peak_used_mb / metrics.vram.total_mb * 100).toFixed(1)}%` }}
-                    ></div>
+              {metrics.vram && (
+                <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                  <h3 className="font-semibold text-orange-800 dark:text-orange-300 mb-2">VRAM</h3>
+                  <div className="text-sm space-y-1">
+                    <div><span className="font-medium">Total:</span> {metrics.vram.total_mb?.toFixed(2) ?? 'N/A'} MB</div>
+                    <div><span className="font-medium">Baseline:</span> {metrics.vram.baseline_used_mb?.toFixed(2) ?? 'N/A'} MB</div>
+                    <div><span className="font-medium">Peak Used:</span> {metrics.vram.peak_used_mb?.toFixed(2) ?? 'N/A'} MB</div>
+                    <div><span className="font-medium">After Forward:</span> {metrics.vram.after_forward_used_mb?.toFixed(2) ?? 'N/A'} MB</div>
+                    {metrics.vram.total_mb && metrics.vram.peak_used_mb && (
+                      <>
+                        <div className="mt-2 w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                          <div
+                            className="bg-orange-600 h-2.5 rounded-full"
+                            style={{ width: `${(metrics.vram.peak_used_mb / metrics.vram.total_mb * 100).toFixed(1)}%` }}
+                          ></div>
+                        </div>
+                        <div className="text-xs text-center">{(metrics.vram.peak_used_mb / metrics.vram.total_mb * 100).toFixed(1)}% utilized</div>
+                      </>
+                    )}
                   </div>
-                  <div className="text-xs text-center">{(metrics.vram.peak_used_mb / metrics.vram.total_mb * 100).toFixed(1)}% utilized</div>
                 </div>
-              </div>
+              )}
 
               {/* Quality Section */}
               <div className="col-span-2 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
