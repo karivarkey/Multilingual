@@ -1,9 +1,10 @@
 // src/components/ChatView.tsx in
 import React, { useRef, useState } from "react";
 import type { Message } from "../App";
+import VirtualKeyboard from "./VirtualKeyboard";
 
 
-export default function ChatView({ messages, onSend }: { messages: Message[]; onSend: (t: string) => void }) {
+export default function ChatView({ messages, onSend, language }: { messages: Message[]; onSend: (t: string) => void; language: string }) {
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -20,6 +21,9 @@ export default function ChatView({ messages, onSend }: { messages: Message[]; on
     onSend(input.trim());
     setInput("");
   };
+
+  // when language is auto, fall back to English keyboard
+  const keyboardLang = language === "auto" ? "en" : language;
 
   return (
     <div className="flex flex-col h-[70vh]">
@@ -44,6 +48,12 @@ export default function ChatView({ messages, onSend }: { messages: Message[]; on
         />
         <button type="submit" className="px-4 py-2 rounded bg-indigo-600 text-white">Send</button>
       </form>
+
+      <VirtualKeyboard
+        language={keyboardLang}
+        value={input}
+        onChange={setInput}
+      />
     </div>
   );
 }

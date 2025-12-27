@@ -43,7 +43,7 @@ export default function App() {
       setLogs((l) => [...l, `Found ${m.length} model(s)`]);
     } catch (err) {
       console.error("list_models error", err);
-      setLogs((l) => [...l, `list_models error: ${String(err)}`]);
+      setLogs((l) => [...l, `list_models error: ${String(err)}`]);  
     }
   }
 
@@ -279,7 +279,7 @@ export default function App() {
 
         {activeTab === "Translator" && <TranslatorPage />}
 
-        {activeTab === "LLM" && <LLMPage />}
+        {activeTab === "LLM" && <LLMPage language={language} />}
 
         {activeTab === "RAG" && <RAGPage />}
       </div>

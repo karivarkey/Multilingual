@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axiosInstance from "../lib/axiosInstance";
 import SystemMetrics from "../components/SystemMetrics";
+import VirtualKeyboard from "../components/VirtualKeyboard";
 
 type InferRawResponse = {
   final_prompt: string;
@@ -9,7 +10,7 @@ type InferRawResponse = {
   rag_used?: string[];
 };
 
-export default function LLMPage() {
+export default function LLMPage({ language }: { language: string }) {
   const [llms, setLlms] = useState<string[]>([]);
   const [loaded, setLoaded] = useState<string | null>(null);
   const [serverUrl, setServerUrl] = useState<string | null>(null);
@@ -91,6 +92,8 @@ export default function LLMPage() {
       setInferLoading(false);
     }
   }
+
+  const keyboardLang = language === "auto" ? "en" : language;
 
   function extractFilenameFromUrl(url: string): string {
     try {
@@ -257,6 +260,8 @@ export default function LLMPage() {
             {inferLoading ? "Running..." : "Run"}
           </button>
         </div>
+
+        <VirtualKeyboard language={keyboardLang} value={prompt} onChange={setPrompt} />
 
         {inferResult && (
           <div className="mt-6 space-y-4">

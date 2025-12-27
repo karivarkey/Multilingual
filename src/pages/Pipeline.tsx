@@ -67,8 +67,8 @@ export default function PipelinePage({
           <div className="text-sm text-gray-500 dark:text-gray-400">Model: {selectedModel ?? "—"}</div>
         </div>
 
-        <ChatView messages={messages} onSend={onSendMessage} />
+        <ChatView messages={messages} onSend={onSendMessage} language={language} />
       </main>
     </div>
   );
-}
+} 

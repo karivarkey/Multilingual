@@ -30,6 +30,10 @@ export default function Controls({
           <option value="auto">Auto-detect</option>
           <option value="en">English</option>
           <option value="hi">Hindi</option>
+          <option value="ta">Tamil</option>
+          <option value="ml">Malayalam</option>
+          <option value="gu">Gujarati</option>
+          <option value="te">Telugu</option>
           <option value="es">Spanish</option>
           <option value="zh">Chinese</option>
         </select>
